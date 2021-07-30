@@ -428,7 +428,7 @@ void VocProc::spectralEnvelope(float *env, fftw_complex *fft, uint32_t nframes){
     };
 
     // |H(w)|
-    memset(tmp+nframes, 0, nTaps);
+    memset(tmp,  0, (nframes+nTaps)*sizeof(float));
     for(int k=0;k<nframes;k++)
         tmp[k]=sqrt(fft[k][0]*fft[k][0]+fft[k][1]*fft[k][1]);
 
