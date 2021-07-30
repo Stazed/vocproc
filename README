@@ -1,0 +1,70 @@
+
+VocProc
+=======
+
+VocProc is a LV2 plugin for pitch shifting, vocoding, automatic pitch correction
+and harmonization of singing voice.
+
+
+Building
+========
+
+Dependencies:
+  -  gtkmm-2.4
+  -  lv2-c++-tools http://ll-plugins.nongnu.org/hacking.html  
+        (requires libboost for building)
+  -  fftw3
+
+On Ubuntu/Debian dev packages are needed (libgtkmm-2.4-dev, libboost-dev, libfftw3-dev).
+
+Compilation:
+> make
+> make install
+
+Uninstalation:
+> make uninstall
+
+
+To vocode or not to vocode?
+Because of its builtin vocoder functionality VocProc has two inputs (voice and carrier)
+and one output. In Ardour, a plugin with two inputs can only be added (AFAIK) to stereo 
+tracks, which leaves an empty channel if vocoder is not used.
+Because of that it is possible to build VocProc without vocoder functionality by editing
+the Makefile (instructions are at the top of the file).
+
+
+Usage
+=====
+
+User interface consists of four sections: pitch shifter, formant correction / 
+vocoder, info about difference between wanted and current tone and automatic 
+pitch correction. 
+
+Pitch shifting section allows manual pitch shifting of input signal in range 
+from octave down (-12 semitones) to octave up (12 semitones). Also included is 
+effect slider for adding simple effect to input signal. Effect is turned on by
+setting slider to any value other than zero. If value is low, effect will produce
+metallica and robotic sound. For higher values sound will be a bit like whispering.
+
+Formant correction / vocoder section can be used to preserve formant structure 
+while pitch shifting (timbre preservation) or to add vocoder style effect to 
+input signal (signal input named carrier is used for second signal source - 
+synth or anything else). 
+
+Offset section shows offset from current tone to wanted tone. If middle (of three)
+section is filled then offset is shown from -100 to 100 cents. Else, offset is
+out of that range.
+
+Automatic pitch correction section allows automatic correction of pitch of input 
+signal. Default behaviour can be modified using three sliders and two dropdown
+menus (for choosing key and scale mode). Threshold determines how much input 
+signal has to be off scale to apply pitch correction. Attack acts like portamento
+- if it is set to zero correction will be applied immediately and if it is set to
+some higher value pitch factor will gradually glide to correct value. Transpose 
+allows transposition (application can be used as a harmonizer). 
+
+
+----------------------------------------
+
+Igor Brkic <igor@hyperglitch.com>
+
