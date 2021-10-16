@@ -8,7 +8,7 @@
 @prefix guiext: <http://lv2plug.in/ns/extensions/ui#>.
 
 <http://hyperglitch.com/dev/VocProc/gui>
-  a guiext:GtkUI;
+  a guiext:Gtk3UI;
   guiext:binary <vocproc_gui.so>;
   guiext:requiredFeature guiext:makeResident.
 

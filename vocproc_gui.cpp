@@ -100,8 +100,8 @@ public:
 #ifndef NO_VOCODER
             refBuilder->get_widget("hbox3", b);
             d_for_voc=new ComboBoxText();
-            d_for_voc->append_text("Formant correction");
-            d_for_voc->append_text("Vocoder");
+            d_for_voc->append("Formant correction");
+            d_for_voc->append("Vocoder");
             d_for_voc->set_active(0);
             b->pack_start(*d_for_voc);
             d_for_voc->show();
@@ -127,24 +127,24 @@ public:
             d_scales_mode=new ComboBoxText();
 
 
-            d_scales_key->append_text("C"); d_scales_key->append_text("C#"); d_scales_key->append_text("D");
-            d_scales_key->append_text("D#");d_scales_key->append_text("E");  d_scales_key->append_text("F");
-            d_scales_key->append_text("F#");d_scales_key->append_text("G");  d_scales_key->append_text("G#");
-            d_scales_key->append_text("A"); d_scales_key->append_text("A#"); d_scales_key->append_text("B");
+            d_scales_key->append("C"); d_scales_key->append("C#"); d_scales_key->append("D");
+            d_scales_key->append("D#");d_scales_key->append("E");  d_scales_key->append("F");
+            d_scales_key->append("F#");d_scales_key->append("G");  d_scales_key->append("G#");
+            d_scales_key->append("A"); d_scales_key->append("A#"); d_scales_key->append("B");
             d_scales_key->set_active(0);
 
             b->pack_start(*d_scales_key);
             d_scales_key->show();
 
-            d_scales_mode->append_text("Chromatic");
-            d_scales_mode->append_text("Major");
-            d_scales_mode->append_text("Minor");
-            d_scales_mode->append_text("Melodic minor 1");
-            d_scales_mode->append_text("Melodic minor 2");
-            d_scales_mode->append_text("Harmonic minor");
-            d_scales_mode->append_text("Whole tone");
-            d_scales_mode->append_text("Pentatonic 1");
-            d_scales_mode->append_text("Pentatonic 2");
+            d_scales_mode->append("Chromatic");
+            d_scales_mode->append("Major");
+            d_scales_mode->append("Minor");
+            d_scales_mode->append("Melodic minor 1");
+            d_scales_mode->append("Melodic minor 2");
+            d_scales_mode->append("Harmonic minor");
+            d_scales_mode->append("Whole tone");
+            d_scales_mode->append("Pentatonic 1");
+            d_scales_mode->append("Pentatonic 2");
             d_scales_mode->set_active(0);
 
             b->pack_start(*d_scales_mode);

@@ -15,7 +15,8 @@ INSTALL_DIR = $(DESTDIR)/usr/lib/lv2
 # one input and one output. Use NO_VOCODER if you plan to use it mostly in Ardour.If you use 
 # it in hosts like Ingen where you can wire it by your wishes, you can leave the default setting.
 
-
+#CPPFLAGS=$(shell pkg-config --cflags gtkmm-3.0)
+CPPFLAGS=$(shell pkg-config --cflags --libs glibmm-2.4 giomm-2.4 gtkmm-3.0)
 # do not edit after this point
 
 BUNDLE = vocproc.lv2
