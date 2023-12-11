@@ -28,8 +28,7 @@ $(BUNDLE): manifest.ttl vocproc.ttl vocproc.so vocproc_gui.so vocproc_gui.ui
 	cp $^ $(BUNDLE)
 
 vocproc.so: vocproc.cpp vocproc.peg
-	g++ $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) -shared -fPIC -DPIC $(DEFINES) vocproc.cpp `pkg-config --cflags --libs lv2-plugin fftw3` -g -lm -o vocproc.so
-
+	g++ $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) -shared -fvisibility=hidden -fPIC -DPIC $(DEFINES) vocproc.cpp `pkg-config --cflags --libs lv2-plugin fftw3` -pthread -g -lm -o vocproc.so
 vocproc_gui.so: vocproc_gui.cpp vocproc.peg
 	g++ $(LDFLAGS) $(CPPFLAGS) $(CFLAGS) -shared -fPIC -DPIC $(DEFINES) vocproc_gui.cpp `pkg-config --cflags --libs lv2-gui` -o vocproc_gui.so
 

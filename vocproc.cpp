@@ -28,6 +28,7 @@
 #include <lv2plugin.hpp>
 #include "vocproc.peg"
 #include <fftw3.h>
+#include <pthread.h>
 #include <string.h>     // because of memset
 #include <stdlib.h>
 #include <math.h>
@@ -38,6 +39,8 @@ using namespace LV2;
 #define MAX_FRAME_LENGTH 4096
 
 #define ROUND(a) ((float)((int)(a+0.5)))
+
+static pthread_mutex_t fftw_planner_lock = PTHREAD_MUTEX_INITIALIZER;
 
 class VocProc : public Plugin<VocProc> {
     private:
@@ -50,7 +53,7 @@ class VocProc : public Plugin<VocProc> {
 
         float   cAutoTune;
 
-        float   *workspace, *gInFIFO, *gIn2FIFO, *gOutFIFO, *gOutputAccum;
+        float   *gInFIFO, *gIn2FIFO, *gOutFIFO, *gOutputAccum;
         float   *window;
 
         long    fftFrameSize, overlap;
@@ -61,7 +64,10 @@ class VocProc : public Plugin<VocProc> {
         fftw_complex *fftTmpC;
         fftw_complex *fftOldC;
         fftw_complex *fftCeps;
-        fftw_plan fftPlan;
+        fftw_plan fftPlan1;
+        fftw_plan fftPlan2;
+        fftw_plan fftPlan3;
+        fftw_plan fftPlanInv;
 
         void    spectralEnvelope(float *env, fftw_complex *fft, uint32_t nframes);
 
@@ -128,9 +134,23 @@ VocProc::VocProc(double rate) : Plugin<VocProc>(p_n_ports){
     fftTmpC=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fftFrameSize);
     fftOldC=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fftFrameSize);
     fftCeps=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fftFrameSize);
+    
+    pthread_mutex_lock (&fftw_planner_lock);
+    fftPlan1=fftw_plan_dft_r2c_1d(fftFrameSize, fftTmpR, fftTmpC, FFTW_ESTIMATE);
+    fftPlan2=fftw_plan_dft_r2c_1d(fftFrameSize, fftTmpR, fftTmpC, FFTW_ESTIMATE);
+    fftPlan3=fftw_plan_dft_c2r_1d(fftFrameSize, fftCeps, fftTmpR, FFTW_ESTIMATE);
+    fftPlanInv=fftw_plan_dft_c2r_1d(fftFrameSize, fftTmpC, fftTmpR, FFTW_ESTIMATE);
+    pthread_mutex_unlock (&fftw_planner_lock);
 
 }
-VocProc::~VocProc(){
+VocProc::~VocProc()
+{
+    pthread_mutex_lock (&fftw_planner_lock);
+    fftw_destroy_plan(fftPlan1);
+    fftw_destroy_plan(fftPlan2);
+    fftw_destroy_plan(fftPlan3);
+    fftw_destroy_plan(fftPlanInv);
+    pthread_mutex_unlock (&fftw_planner_lock);
 
     free(gInFIFO);
 #ifndef NO_VOCODER
@@ -257,9 +277,7 @@ void VocProc::run(uint32_t nframes) {
             powerIn=tmpPower/(float)fftFrameSize;
 
             // do transform
-            fftPlan=fftw_plan_dft_r2c_1d(fftFrameSize, fftTmpR, fftTmpC, FFTW_ESTIMATE);
-            fftw_execute(fftPlan);
-            fftw_destroy_plan(fftPlan);
+            fftw_execute(fftPlan1);
 
             // pitch correction
             if(cAutoTune){
@@ -296,9 +314,7 @@ void VocProc::run(uint32_t nframes) {
                         *dPointer++=*(fPointer++) * *(fPointer2++);
                     }
 
-                    fftPlan=fftw_plan_dft_r2c_1d(fftFrameSize, fftTmpR, fftTmpC, FFTW_ESTIMATE);
-                    fftw_execute(fftPlan);
-                    fftw_destroy_plan(fftPlan);
+                    fftw_execute(fftPlan2);
                 }
 #endif
 
@@ -317,9 +333,7 @@ void VocProc::run(uint32_t nframes) {
             }
 
             // do inverse transform
-            fftPlan=fftw_plan_dft_c2r_1d(fftFrameSize, fftTmpC, fftTmpR, FFTW_ESTIMATE);
-            fftw_execute(fftPlan);
-            fftw_destroy_plan(fftPlan);
+            fftw_execute(fftPlanInv);
 
             fPointer=gOutputAccum; dPointer=fftTmpR; fPointer2=window;
             for(k=0; k < fftFrameSize; k++) {
@@ -470,9 +484,7 @@ float VocProc::pitchFrequency(fftw_complex *block){
         fftCeps[i][1]=0;
     }
 
-    fftPlan=fftw_plan_dft_c2r_1d(fftFrameSize, fftCeps, fftTmpR, FFTW_ESTIMATE);
-    fftw_execute(fftPlan);
-    fftw_destroy_plan(fftPlan);
+    fftw_execute(fftPlan3);
 
     // normalize
     for(i=0;i<fftFrameSize/2;i++) cepst[i]=fabs(fftTmpR[i]/(float)fftFrameSize)+1e6;
